@@ -12,6 +12,13 @@
 #define S_TO_MS 1000
 #define MS_TO_S .001
 
+typedef struct calc_distance_args
+{
+	double *p_distance_m;
+	double v_mps;
+	long now_ms;
+} calc_distance_args_t;
+
 /*
  * Timer
  * 1. Beispielprogramm zum Laufen bekommen
@@ -23,9 +30,11 @@
  */
 
 void timer_callback_print(timer_t timerid, double *distance_m);
-void timer_callback_calc(timer_t timerid, double *return_to);
-int get_time_ms();
-double calc_distance(int t_ms, double v_mps);
+void timer_callback_calc(timer_t timerid, void *args);
+long get_time_ms();
+double calc_distance(long t_ms, double v_mps);
+
+SEM_ID sem_calc_distance_args;
 
 int main(void)
 {
@@ -36,6 +45,14 @@ int main(void)
 	
 	timer_t calc_distance_timer_id, print_timer_id;
 	struct itimerspec calc_distance_timer_spec, print_timer_spec;
+	
+	// Argumente für Callback von calc_distance_timer
+	calc_distance_args_t calc_distance_args;
+	calc_distance_args.p_distance_m = &distance_m;
+	calc_distance_args.v_mps = .1;
+	calc_distance_args.now_ms = 0;
+	
+	sem_calc_distance_args = semMCreate(SEM_Q_FIFO);
 	
 	/*
 	 * Timer zur Berechnung der Strecke erstellen
@@ -51,7 +68,7 @@ int main(void)
 		return(errno);
 	}
 	// timer_callback mit Timer verbinden
-	if (timer_connect(calc_distance_timer_id, (VOIDFUNCPTR) timer_callback_calc, &distance_m) == ERROR)
+	if (timer_connect(calc_distance_timer_id, (VOIDFUNCPTR) timer_callback_calc, (void *)&calc_distance_args) == ERROR)
 	{
 		printf("ERROR: Connecting calc_distance to the timer failed!");
 		return(errno);
@@ -89,9 +106,16 @@ int main(void)
 		return(errno);
 	}
 
+	/*
+	 * Endlosschleife
+	 */
 	while(1)
 	{
-		// Endlosschleife während der der Timer ausgeführt wird
+		semMTake(sem_calc_distance_args, WAIT_FOREVER);
+		
+		calc_distance_args.now_ms = get_time_ms(); // aktuelle Zeit merken
+		
+		semMGive(sem_calc_distance_args);
 	}
 	
 	// Timer wieder ausschalten & löschen -> wird theoretisch nie erreicht
@@ -105,7 +129,6 @@ int main(void)
 		printf("ERROR: Deleting timer failed!");
 		return(errno);
 	}
-	// Timer wieder ausschalten & löschen -> wird theoretisch nie erreicht
 	if (timer_cancel(print_timer_id) == ERROR)
 	{
 		printf("ERROR: Canceling timer failed!");
@@ -116,7 +139,7 @@ int main(void)
 		printf("ERROR: Deleting timer failed!");
 		return(errno);
 	}
-
+	
 	return OK;
 }
 
@@ -129,39 +152,38 @@ void timer_callback_print(timer_t timerid, double *distance_m)
 }
 
 /*
- * Callback des Streckenberechnungs-Timers; wird alle 50ms ausgeführt.
+ * Callback für calc_distance_timer, wird alle 50ms aufgerufen.
+ * Berechnet die seit dem letzten Aufruf zurückgelegte Strecke und addiert sie zur Gesamtstrecke.
+ * 
+ * Argumente:
+ * 	void *args	-> eigentlich calc_distance_args_t *, muss umgecasted werden
+ * 				-> beinhaltet Geschwindigkeit [m/s], aktuelle Zeit [ms] & Pointer auf Variable fürs Ergebnis
  */
-void timer_callback_calc(timer_t timerid, double *distance_m)
+void timer_callback_calc(timer_t timerid, void *args)
 {
-	static int last_time_ms = -1;
-	int now_ms = 0, dt_ms = 0;
-	double v_mps = .1;
+	semMTake(sem_calc_distance_args, WAIT_FOREVER);
 	
-	if (last_time_ms == -1) last_time_ms = get_time_ms();
+	static long last_time_ms = -1; // Zeitpunkt als die Funktion das letzte Mal ausgeführt wurde
+	long dt_ms = 0;
+	
+	calc_distance_args_t *temp = (calc_distance_args_t *)args;
+	
+	if (last_time_ms == -1) last_time_ms = temp->now_ms;
 	
 	// Zeit seit letztem Aufruf berechnen
-	now_ms = get_time_ms();
-	dt_ms = now_ms - last_time_ms;
+	dt_ms = temp->now_ms - last_time_ms;
 	// Strecke berechnen
-	*distance_m += calc_distance(dt_ms, v_mps);
+	*temp->p_distance_m += temp->v_mps * dt_ms * MS_TO_S;
 
-	last_time_ms = now_ms;
-}
-
-/*
- * Berechnet die Geschwindigkeit in m/s.
- */
-double calc_distance(int t_ms, double v_mps)
-{
-	double t_s = t_ms * MS_TO_S;
-
-	return v_mps * t_s;
+	last_time_ms = temp->now_ms;
+	
+	semMGive(sem_calc_distance_args);
 }
 
 /*
  * Berechnet die vergangene Zeit in ms.
  */
-int get_time_ms()
+long get_time_ms()
 {
 	return (tickGet() / TPS) * S_TO_MS;
 }
