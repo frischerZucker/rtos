@@ -1,0 +1,114 @@
+Version=1.0
+BuildSupport=Managed
+BuildCommand=%makeprefix% make --no-print-directory
+PreferredBuildSpecs=win32:A*.*
+PreferredBuildSpecs=linux:A*.*
+GlobalMacro.Name=PROJECT_TYPE
+GlobalMacro.PROJECT_TYPE.Value=DKM
+GlobalMacro.Name=DEFINES
+GlobalMacro.DEFINES.Value=
+GlobalMacro.Name=EXPAND_DBG
+GlobalMacro.EXPAND_DBG.Value=0
+GlobalMacro.Name=APICHECK_OPTIONS
+GlobalMacro.APICHECK_OPTIONS.Value=-warning
+Macro.Name=VX_CPU_FAMILY
+Macro.Name=CPU
+Macro.Name=TOOL_FAMILY
+Macro.Name=TOOL_VERSION
+Macro.Name=_CC_VERSION
+Macro.Name=TOOL
+Macro.Name=TOOL_PATH
+Macro.Name=CC_ARCH_SPEC
+Macro.Name=VSB_DIR
+Macro.Name=VSB_CONFIG_FILE
+Macro.Name=LIBPATH
+Macro.Name=LIBS
+Macro.Name=DKM_LONGCALL
+Macro.Name=BDGEN_VSB_INCLUDE
+Macro.Name=APICHECK_CMD
+Macro.Name=APICHECK
+BuildTool.Name=C-Compiler
+BuildTool.C-Compiler.InputSuffixes=*.c
+BuildTool.C-Compiler.OutputIsObject=true
+BuildTool.C-Compiler.OutputCanBePassed=false
+BuildTool.Name=C++-Compiler
+BuildTool.C++-Compiler.InputSuffixes=*.cpp;*.CPP;*.C;*.cxx;*.cc
+BuildTool.C++-Compiler.OutputIsObject=true
+BuildTool.C++-Compiler.OutputCanBePassed=false
+BuildTool.Name=Linker
+BuildTool.Linker.InputSuffixes=
+BuildTool.Linker.OutputIsObject=false
+BuildTool.Linker.OutputCanBePassed=false
+BuildTool.Name=Partial Image Linker
+BuildTool.Partial Image Linker.InputSuffixes=
+BuildTool.Partial Image Linker.OutputIsObject=false
+BuildTool.Partial Image Linker.OutputCanBePassed=true
+BuildTool.Name=Librarian
+BuildTool.Librarian.InputSuffixes=
+BuildTool.Librarian.OutputIsObject=false
+BuildTool.Librarian.OutputCanBePassed=true
+BuildTool.Name=Assembler
+BuildTool.Assembler.InputSuffixes=*.s;*.S
+BuildTool.Assembler.OutputIsObject=true
+BuildTool.Assembler.OutputCanBePassed=false
+BuildSpec.Name=vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.VX_CPU_FAMILY.Value=simlinux
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.CPU.Value=SIMLINUX
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.TOOL_FAMILY.Value=llvm
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.TOOL_VERSION.Value=llvm_2016_04
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro._CC_VERSION.Value=llvm_12_0_1_2
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.TOOL.Value=llvm
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.TOOL_PATH.Value=#WIND_HOME#/compilers/llvm-12.0.1.2/#WIND_VX7_LLVM_HOST_TYPE#/bin
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.CC_ARCH_SPEC.Value=--target=x86_64 -m64 -mcmodel=large   -mno-red-zone -fno-builtin -nostdlib -fno-omit-frame-pointer -mno-implicit-float
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.VSB_DIR.Value=/opt/windriver/vxworks/22.03/samples/prebuilt_projects/vsb_vxsim_linux
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.VSB_CONFIG_FILE.Value=#VSB_DIR#/h/config/vsbConfig.h
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.LIBPATH.Value=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.LIBS.Value=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.DKM_LONGCALL.Value= 
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.BDGEN_VSB_INCLUDE.Value=#VSB_DIR#/h/config/auto.conf
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.APICHECK_CMD.Value=apicheck.sh -r "#VSB_DIR#/krnl/apicheck/forbidden_api.lst" -n "nmpentium" -u -s "$<" "$@" #APICHECK_OPTIONS#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Macro.APICHECK.Value=0
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.IncludeSearchPath=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.IncludeSearchPath=-I#VSB_DIR#/share/h
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.IncludeSearchPath=-isystem#VSB_DIR#/krnl/h/system
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.IncludeSearchPath=-isystem#VSB_DIR#/krnl/h/public
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.IncludeSearchPath=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.IncludeSearchPath=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Symbol=-DCPU=_VX_#CPU#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Symbol=-DTOOL_FAMILY=#TOOL_FAMILY#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Symbol=-DTOOL=#TOOL#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Symbol=-D_WRS_KERNEL
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.SymbolList=-D_WRS_VX_SMP -D_WRS_CONFIG_SMP
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Symbol=-D_VSB_CONFIG_FILE=\"#VSB_DIR#/h/config/vsbConfig.h\"
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.Symbol= 
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.SymbolList=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C-Compiler.DerivedFileSignatures=*.o
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C-Compiler.DebugFlags=-g
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C-Compiler.NonDebugFlags=-O2
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C-Compiler.ToolFlags=#CC_ARCH_SPEC# -std=c11 -D__vxworks -D__VXWORKS__ -D__ELF__ -D_HAVE_TOOL_XTORS  -nostdlibinc -nostdinc++ -ftls-model=local-exec -fno-builtin -fno-strict-aliasing -D_USE_INIT_ARRAY -mllvm -two-entry-phi-node-folding-threshold=2 -fno-unwind-tables -fno-asynchronous-unwind-tables -Wall -Wconversion -Wno-sign-conversion    -MD -MP  #DKM_LONGCALL#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C-Compiler.Command=echo "building $@";%ccompilerprefix% #TOOL_PATH#/clang %DebugModeFlags% %ToolFlags% %Defines% #DEFINES# #ADDED_CFLAGS# %Includes% #ADDED_INCLUDES# -o %OutFile% -c %InFile% && true && if [ "#APICHECK#" = "1" ]; then #APICHECK_CMD#;fi
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C++-Compiler.DerivedFileSignatures=*.o
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C++-Compiler.DebugFlags=-g
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C++-Compiler.NonDebugFlags=-O2
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C++-Compiler.ToolFlags=#CC_ARCH_SPEC#  -D__vxworks -D__VXWORKS__ -D__ELF__ -D_HAVE_TOOL_XTORS  -nostdlibinc -nostdinc++ -ftls-model=local-exec -fno-builtin -fno-strict-aliasing -D_USE_INIT_ARRAY -mllvm -two-entry-phi-node-folding-threshold=2 -fno-unwind-tables -fno-asynchronous-unwind-tables -std=c++14    -MD -MP  #DKM_LONGCALL#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.C++-Compiler.Command=echo "building $@";%cppcompilerprefix% #TOOL_PATH#/clang %DebugModeFlags% %ToolFlags% %Defines% #DEFINES# #ADDED_C++FLAGS# %Includes% #ADDED_INCLUDES# -o %OutFile% -c %InFile% && true && if [ "#APICHECK#" = "1" ]; then #APICHECK_CMD#;fi
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Linker.DerivedFileSignatures=*.out
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Linker.DebugFlags=-g
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Linker.NonDebugFlags=-O2
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Linker.ToolFlags=--force-group-allocation -T #VSB_DIR#/krnl/ldscripts/dkm.ld
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Linker.Command=echo "building $@";rm -f %OutFile%;#TOOL_PATH#/nmpentium %Objects% | tclsh #WIND_BUILD#/mk/tcl/munch.tcl -c pentium -tags #VSB_DIR#/krnl/tags/dkm.tags > #OBJ_DIR#/ctdt.c;%ccompilerprefix% #TOOL_PATH#/clang %DebugModeFlags% #CC_ARCH_SPEC# -std=c11 -D__vxworks -D__VXWORKS__ -D__ELF__ -D_HAVE_TOOL_XTORS  -nostdlibinc -nostdinc++ -ftls-model=local-exec -fno-builtin -fno-strict-aliasing -D_USE_INIT_ARRAY -mllvm -two-entry-phi-node-folding-threshold=2 -fno-unwind-tables -fno-asynchronous-unwind-tables -fdollars-in-identifiers -Wall -Wconversion -Wno-sign-conversion   -MD -MP  #ADDED_CFLAGS# %Includes% #ADDED_INCLUDES#  #DKM_LONGCALL# %Defines% #DEFINES# -o #OBJ_DIR#/ctdt.o -c #OBJ_DIR#/ctdt.c && ls #OBJ_DIR#/ctdt.o; %linkerprefix% #TOOL_PATH#/ldpentium -m elf_x86_64 -X -r   --eh-frame-hdr  %ToolFlags%  -o %OutFile% #OBJ_DIR#/ctdt.o %Objects% %Libraries% #LIBPATH# #LIBS# #ADDED_LIBPATH# #ADDED_LIBS# && if [ "#EXPAND_DBG#" = "1" ]; then plink "$@";fi && $(if $(_WRS_CONFIG_SECURE_LOADER),signtool  --key=$(_WRS_CONFIG_SECURE_LOADER_PRIVATE_SIGNING_KEY_FILE) --cert=$(_WRS_CONFIG_SECURE_LOADER_PUBLIC_SIGNING_CERT_FILE) --type=ELF $@,true) && true && $(if $(_WRS_CONFIG_SBOM),vxsbomtool --database  --file $@ --map $@.map && mkdir -p  && cp $@*.spdx ,true)
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Partial Image Linker.DerivedFileSignatures=*.o
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Partial Image Linker.DebugFlags=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Partial Image Linker.NonDebugFlags=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Partial Image Linker.ToolFlags=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Partial Image Linker.Command=echo "building $@"; %linkerprefix% #TOOL_PATH#/ldpentium -m elf_x86_64 -X -r   --eh-frame-hdr  %ToolFlags% -o %OutFile% %Objects% #ADDED_OBJECTS# %Libraries% #LIBPATH# #LIBS# #ADDED_LIBPATH# #ADDED_LIBS# && if [ "#EXPAND_DBG#" = "1" ]; then plink "$@";fi
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Librarian.DerivedFileSignatures=*.a
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Librarian.DebugFlags=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Librarian.NonDebugFlags=
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Librarian.ToolFlags=crus
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Librarian.Command=echo "building $@";%archiverprefix% #TOOL_PATH#/arpentium %ToolFlags% %OutFile% %Objects% #ADDED_OBJECTS#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Assembler.DerivedFileSignatures=*.o
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Assembler.DebugFlags=-g
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Assembler.NonDebugFlags=-O2
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Assembler.ToolFlags=#CC_ARCH_SPEC# -std=c11 -D__vxworks -D__VXWORKS__ -D__ELF__ -D_HAVE_TOOL_XTORS  -nostdlibinc -nostdinc++ -ftls-model=local-exec -fno-builtin -fno-strict-aliasing -D_USE_INIT_ARRAY -mllvm -two-entry-phi-node-folding-threshold=2 -fno-unwind-tables -fno-asynchronous-unwind-tables  -xassembler-with-cpp  -MD -MP  #DKM_LONGCALL#
+BuildSpec.vsb_vxsim_linux_SIMLINUXllvm_LP64_LARGE_SMP.BuildTool.Assembler.Command=echo "building $@";%assemblerprefix% #TOOL_PATH#/clang %DebugModeFlags% %ToolFlags% %Defines% #DEFINES# #ADDED_CFLAGS# %Includes% #ADDED_INCLUDES# -o %OutFile% -c %InFile% && true
