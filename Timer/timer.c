@@ -32,7 +32,6 @@ typedef struct calc_distance_args
 void timer_callback_print(timer_t timerid, double *distance_m);
 void timer_callback_calc(timer_t timerid, void *args);
 long get_time_ms();
-double calc_distance(long t_ms, double v_mps);
 
 SEM_ID sem_calc_distance_args;
 
