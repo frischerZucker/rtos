@@ -19,7 +19,16 @@ typedef struct {
 typedef struct {
 	double x;
 	double y;
-} vec2_t; 
+} vec2_t;
+
+typedef enum {
+	Z_REGAL,
+	Z_TURM,
+	Z_EA
+} pos_z_t;
+
+extern const vec3_t POS_EINGABE;
+extern const vec3_t POS_AUSGABE;
 
 // beschreibt ob etwas ins Lager ein- oder ausgelagert werden soll
 typedef enum {
@@ -52,9 +61,9 @@ typedef enum {
 
 // Liste mit einzelnen Schritten eines Auftrags
 typedef struct {
-	auftragsstatus_t * job_status;
-	jobtyp_t * job_types;
-	vec3_t * targets;
+	auftragsstatus_t job_status[7];
+	jobtyp_t job_types[7];
+	vec3_t targets[7];
 	int active_job;
 	int length;
 } job_queue_t;
