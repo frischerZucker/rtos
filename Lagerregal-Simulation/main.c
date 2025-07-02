@@ -24,6 +24,8 @@ struct itimerspec timer_spec;
 const vec3_t POS_EINGABE = {10, 1, Z_EA};
 const vec3_t POS_AUSGABE = {10, 1, Z_EA};
 
+lagerstatus_t lagerstatus = { {{0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}}, {2, 5, Z_REGAL}};
+
 int start(void) {
 	init_auftragsverwaltung();
 	

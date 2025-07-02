@@ -8,17 +8,20 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
+#define ROWS 5
+#define COLS 10
+
 // 3x1 Vektor -> zB. für Position
 typedef struct {
-	double x;
-	double y;
-	double z;
+	int x;
+	int y;
+	int z;
 } vec3_t;
 
 // 2x1 Vektor -> zB. für Zielfach im Regal eines Auftrags
 typedef struct {
-	double x;
-	double y;
+	int x;
+	int y;
 } vec2_t;
 
 typedef enum {
@@ -67,5 +70,15 @@ typedef struct {
 	int active_job;
 	int length;
 } job_queue_t;
+
+typedef enum {
+	LEER,
+	VOLL
+} regalzustand_t;
+
+typedef struct {
+	regalzustand_t fach[COLS][ROWS];
+	vec3_t schlitten_pos;
+} lagerstatus_t;
 
 #endif // DATA_TYPES_H
