@@ -8,6 +8,7 @@
 #ifndef SCHLITTENSTEUERUNG_H
 #define SCHLITTENSTEUERUNG_H
 
+void schlittensteuerung_loop();
 void schlittensteuerung();
 
 #endif // SCHLITTENSTEUERUNG_H

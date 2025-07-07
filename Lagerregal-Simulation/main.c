@@ -1,76 +1,247 @@
-/* includes */
-
+#include <vxWorks.h>
+#include <taskLib.h>
+#include <semLib.h>
+#include <pipeDrv.h>
 #include <stdio.h>
-#include <timexLib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <ioLib.h>
 
-#include "msgQLib.h"
-#include "taskLib.h"
-#include "vxWorks.h"
+#include "headers/busdata.h"
+#include "headers/lagerhardware.h"
+#include "headers/pipes.h"
+#include "headers/sensordaten_gen.h"
 
-#include "auftragsverwaltung.h"
-#include "data_types.h"
+#define TIMER_INTERVAL_SEC  0
+#define TIMER_INTERVAL_NSEC 100000000 /*100000000*/
 
-#define MAX_AUFTRAEGE 10
-#define MAX_AUFTRAGS_MSG_LENGTH 100
-#define MAX_TARGET_POS 1
+/* === Globale Ressourcen === */
+int aktor_pipe_fd, sensor_pipe_fd;
+MSG_Q_ID msgQ_gueltigeDaten;
+SEM_ID semZustand;
+SEM_ID semLagerhardware;
+SEM_ID semStrecke;
+timer_t timerStrecke;
 
-#define MS_TO_NS 1000*1000
+/* === Globale Speicher === */
+typedef struct {
+    int zielX, zielY, zielZ;
+} speicher_strecke;
 
-MSG_Q_ID msgq_auftraege, msgq_target_pos;
+speicher_zustand zustand;
+speicher_strecke strecke;
+regal_status lager;
 
-timer_t timer_id;
-struct itimerspec timer_spec;
+/* ===== Busdaten analysieren (via Pipe) ===== */
+void taskBusdatenAnalysieren(timer_t tid, int arg) {
+    abusdata daten;
+    
+    int bytes = 0;
+	if (ioctl(aktor_pipe_fd, FIONREAD, &bytes) == ERROR) {
+        printf("ERROR: ioctl failed in taskBusdatenAnalysieren!\n");
+    	return;
+    }
+        	
+    // abbrechen wenn keine Nachricht vorhanden ist
+	if (bytes <= 0) return;
+    
+    if (read(aktor_pipe_fd, &daten, sizeof(abusdata)) > 0) {
+    	printf("[Simulation] Aktordaten erhalten\n");
+    	printf("azv: %d azh: %d\n", daten.abits.azv, daten.abits.azh);
+        /* === Bewegung simulieren in cm === */
+        if (daten.abits.axr)
+            lager.x += (daten.abits.axs ? lager.x_speed_fast : lager.x_speed);
+        else if (daten.abits.axl)
+            lager.x -= (daten.abits.axs ? lager.x_speed_fast : lager.x_speed);
 
-const vec3_t POS_EINGABE = {10, 1, Z_EA};
-const vec3_t POS_AUSGABE = {10, 1, Z_EA};
+        if (daten.abits.ayo)
+            lager.y += lager.y_speed;
+        else if (daten.abits.ayu)
+            lager.y -= lager.y_speed;
 
-lagerstatus_t lagerstatus = { {{0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}}, {2, 5, Z_REGAL}};
+        if (daten.abits.azv)
+            lager.z -= lager.z_speed;
+        else if (daten.abits.azh)
+            lager.z += lager.z_speed;
 
-int start(void) {
-	init_auftragsverwaltung();
-	
-	if ((msgq_auftraege = msgQCreate(MAX_AUFTRAEGE, MAX_AUFTRAGS_MSG_LENGTH, MSG_Q_FIFO)) == NULL)
-	{
-		printf("ERROR: msgQCreate for msgq_auftraege failed!\n");
-	}
-	if ((msgq_target_pos = msgQCreate(MAX_TARGET_POS, MAX_AUFTRAGS_MSG_LENGTH, MSG_Q_FIFO)) == NULL)
-	{
-		printf("ERROR: msgQCreate for msgq_target_pos failed!\n");
-	}
-	
-	timer_spec.it_value.tv_sec = 1;
-	timer_spec.it_value.tv_nsec = 0;
-	timer_spec.it_interval.tv_sec = 1;
-	timer_spec.it_interval.tv_nsec = 0;
-	if (timer_create(CLOCK_REALTIME, NULL, &timer_id) == ERROR)
-	{
-		printf("ERROR: Creating timer failed!");
-		return(errno);
-	}
-	// timer_callback mit Timer verbinden
-	if (timer_connect(timer_id, (VOIDFUNCPTR) auftragsverwaltung, NULL) == ERROR)
-	{
-		printf("ERROR: Connecting calc_distance to the timer failed!");
-		return(errno);
-	}
-	// Timer starten
-	if (timer_settime(timer_id, TIMER_RELTIME, &timer_spec, NULL) == ERROR)
-	{
-		printf("ERROR: timer_settime failed!");
-		return(errno);
-	}
-	
-	auftrag_t test = {AUSLAGERN, WARTET, {4, 2}};
+        /* === Zustand bestimmen nur wenn Position im Toleranzbereich zur Lichtschranke === */
+        int posX = (lager.x % lager.dist_x < lager.pin_x) ? (lager.x / lager.dist_x) : posX;
+        int posY = (lager.y % lager.dist_yu < lager.pin_y) ? (lager.y / lager.dist_yu) : posY;
+        int posZ = (lager.z % lager.dist_z < lager.pin_z) ? (lager.z / lager.dist_z) : posZ;
+        
+        sensordaten_gen();
+        
+//        if (posX >= 0 && posX <= 9 && posY >= 0 && posY <= 4 && posZ >= 0 && posZ <= 2) {
+            if (semTake(semZustand, WAIT_FOREVER) == OK) {
+                zustand.x = posX;
+                zustand.y = posY;
+                zustand.z = posZ;
+                semGive(semZustand);
+            }
+            
+            printf("KOORDINATEN: %d %d %d\n", lager.x, lager.y, lager.z);
+            printf("ZUSTAND: %d %d %d\n", zustand.x, zustand.y, zustand.z);
 
-	taskDelay(100);
-	
-	if((msgQSend(msgq_auftraege, (char*)(void*)&test, MAX_AUFTRAGS_MSG_LENGTH, WAIT_FOREVER, MSG_PRI_NORMAL)) == ERROR)
-	{
-		printf("ERROR: msgQSend for msgq_auftraege failed!\n");
-	}
-	
-	taskDelay(10);
-	
-	//TASK_ID t = taskSpawn("auftragsverwaltung", 101, 0x100, 2000, (FUNCPTR) auftragsverwaltung, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0);
-	while(1);
+            msgQSend(msgQ_gueltigeDaten, (char*)&daten, sizeof(abusdata), NO_WAIT, MSG_PRI_NORMAL);
+
+            // Streckenberechnung einmalig triggern
+            struct itimerspec spec = { {0, 0}, {1, 0} };
+            timer_settime(timerStrecke, TIMER_RELTIME, &spec, NULL);
+//        } else {
+//            printf("[Analyse] Position außerhalb Pin-Toleranz: x=%ld y=%ld z=%ld\n", lager.x, lager.y, lager.z);
+//        }
+    }
+    else {
+    	printf("[Simulation] keine Daten erhalten\n\n");
+    }
+}
+
+/* ===== Streckenberechnung ===== */
+//void taskStreckenberechnung(timer_t tid, int arg) {
+//    abusdata daten;
+//
+//    if (msgQReceive(msgQ_gueltigeDaten, (char*)&daten, sizeof(abusdata), NO_WAIT) != ERROR) {
+//        int x, y, z, dx, dy, dz;
+//
+//        // Beispiel: Berechne aktuelle Position aus daten abits (analog wie in taskBusdatenAnalysieren)
+//        // Das kannst du anpassen, je nachdem was genau in abusdata drin ist
+//        int posX = -1, posY = -1, posZ = -1;
+//
+//        // Hier muss die Logik ergänzt werden, um posX/Y/Z aus daten zu bestimmen
+//        // Beispiel (vereinfacht):
+//        if (daten.abits.axr)
+//            posX = lager.x + (daten.abits.axs ? lager.x_speed_fast : lager.x_speed);
+//        else if (daten.abits.axl)
+//            posX = lager.x - (daten.abits.axs ? lager.x_speed_fast : lager.x_speed);
+//
+//        if (daten.abits.ayo)
+//            posY = lager.y + lager.y_speed;
+//        else if (daten.abits.ayu)
+//            posY = lager.y - lager.y_speed;
+//
+//        if (daten.abits.azv)
+//            posZ = lager.z + lager.z_speed;
+//        else if (daten.abits.azh)
+//            posZ = lager.z - lager.z_speed;
+//
+//        // Fallback auf globalen Zustand, falls keine valide Position ermittelt wurde
+//        if (posX < 0 || posX > 9) posX = zustand.x;
+//        if (posY < 0 || posY > 4) posY = zustand.y;
+//        if (posZ < 0 || posZ > 2) posZ = zustand.z;
+//
+//        if (semTake(semLagerhardware, WAIT_FOREVER) == OK) {
+//            dx = lager.dist_x; dy = lager.dist_yu; dz = lager.dist_z;
+//            lager.x = posX;
+//            lager.y = posY;
+//            lager.z = posZ;
+//            semGive(semLagerhardware);
+//        }
+//
+//        if (semTake(semStrecke, WAIT_FOREVER) == OK) {
+//            strecke.zielX = (posX + dx <= 9) ? posX + dx : posX;
+//            strecke.zielY = (posY + dy <= 4) ? posY + dy : posY;
+//            strecke.zielZ = (posZ + dz <= 2) ? posZ + dz : posZ;
+//            semGive(semStrecke);
+//        }
+//
+//        printf("[Strecke] Neue Zielkoordinaten: (%d, %d, %d)\n", strecke.zielX, strecke.zielY, strecke.zielZ);
+//        
+//        sensordaten_gen();
+//    }
+//}
+
+
+
+void taskStreckenberechnung(timer_t tid, int arg) {
+    abusdata daten;
+
+    if (msgQReceive(msgQ_gueltigeDaten, (char*)&daten, sizeof(abusdata), NO_WAIT) != ERROR) {
+        int x, y, z, dx, dy, dz;
+
+        if (semTake(semZustand, WAIT_FOREVER) == OK) {
+            x = zustand.x; y = zustand.y; z = zustand.z;
+            semGive(semZustand);
+        }
+
+        if (semTake(semLagerhardware, WAIT_FOREVER) == OK) {
+            dx = lager.dist_x; dy = lager.dist_yu; dz = lager.dist_z;
+            semGive(semLagerhardware);
+        }
+
+        if (semTake(semStrecke, WAIT_FOREVER) == OK) {
+            strecke.zielX = (x + dx <= 9) ? x + dx : x;
+            strecke.zielY = (y + dy <= 4) ? y + dy : y;
+            strecke.zielZ = (z + dz <= 2) ? z + dz : z;
+            semGive(semStrecke);
+        }
+
+        printf("[Strecke] Neue Zielkoordinaten: (%d, %d, %d)\n", strecke.zielX, strecke.zielY, strecke.zielZ);
+    }
+}
+
+/* ===== Initialisierung ===== */
+void initSimulationTasks() {
+    struct itimerspec timerSpec;
+    timer_t timerAnalyse;
+
+    pipeDrv(10);
+    pipeDevCreate(AKTOR_PIPE_NAME, AKTOR_PIPE_MSG_SIZE, 10);
+    aktor_pipe_fd = open(AKTOR_PIPE_NAME, O_RDONLY, 0);
+    if (aktor_pipe_fd == ERROR) {
+        printf("[ERROR] Aktor-Pipe konnte nicht geöffnet werden\n");
+        return;
+    }
+
+    pipeDevCreate(SENSOR_PIPE_NAME, SENSOR_PIPE_MSG_SIZE, 10);
+    int sensor_pipe_fd_read = open(SENSOR_PIPE_NAME, O_RDONLY, 0);
+    if (sensor_pipe_fd_read == ERROR) {
+        printf("[ERROR] Sensor-Pipe (read) konnte nicht geöffnet werden\n");
+        return;
+    }
+    
+    sensor_pipe_fd = open(SENSOR_PIPE_NAME, O_WRONLY, 0);
+    if (sensor_pipe_fd == ERROR) {
+        printf("[ERROR] Sensor-Pipe (write) konnte nicht geöffnet werden\n");
+        return;
+    }
+    
+    msgQ_gueltigeDaten  = msgQCreate(10, sizeof(abusdata), MSG_Q_PRIORITY);
+    semZustand          = semBCreate(SEM_Q_PRIORITY, SEM_FULL);
+    semLagerhardware    = semBCreate(SEM_Q_PRIORITY, SEM_FULL);
+    semStrecke          = semBCreate(SEM_Q_PRIORITY, SEM_FULL);
+
+    // Initialisierung
+    lager.x = lager.y = 0; lager.z = 10;
+    lager.dist_x = 10; lager.dist_yu = 10; lager.dist_z = 10;
+    lager.pin_x = 5; lager.pin_y = 5; lager.pin_z = 5;
+    lager.x_speed = 1; lager.x_speed_fast = 2;
+    lager.y_speed = 1; lager.z_speed = 1;
+    
+    zustand.x = 0; zustand.y = 0; zustand.z = 1;
+
+    timerSpec.it_value.tv_sec = 1;
+    timerSpec.it_value.tv_nsec = 0;
+    timerSpec.it_interval.tv_sec = TIMER_INTERVAL_SEC;
+    timerSpec.it_interval.tv_nsec = TIMER_INTERVAL_NSEC;
+
+    if (timer_create(CLOCK_REALTIME, NULL, &timerAnalyse) == ERROR) {
+    	printf("ERROR: timer_create\n");
+    	return;
+    }
+    if (timer_connect(timerAnalyse, (VOIDFUNCPTR)taskBusdatenAnalysieren, 0) == ERROR){
+    	printf("ERROR: timer_connect\n");
+    	return;
+    }
+    if(timer_settime(timerAnalyse, TIMER_RELTIME, &timerSpec, NULL) == ERROR){
+    	printf("ERROR: timer_settime\n");
+    	return;
+    }
+
+    timer_create(CLOCK_REALTIME, NULL, &timerStrecke);
+    timer_connect(timerStrecke, (VOIDFUNCPTR)taskStreckenberechnung, 0);
+    
+    printf("[Simulation] Simulation fertig initialisiert.\n");
+    
+    while(1);
 }
