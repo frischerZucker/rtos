@@ -27,7 +27,7 @@
 #define MS_TO_NS(t) 1000*1000
 
 #define TIMER_INTERVAL_SEC  0
-#define TIMER_INTERVAL_NSEC 100000000
+#define TIMER_INTERVAL_NSEC 100000000 // 100000000
 
 
 void timer_handler();
@@ -114,7 +114,7 @@ int start(void) {
 int i = 0;
 void timer_handler() {
 	i++;
-	printf("\n--- %d ---\n", i);
+//	printf("\n--- %d ---\n", i);
 //	if(i > 100000)
 //	{
 //		printf("END.");

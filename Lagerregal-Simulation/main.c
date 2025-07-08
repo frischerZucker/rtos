@@ -72,25 +72,22 @@ void taskBusdatenAnalysieren(timer_t tid, int arg) {
         
         sensordaten_gen();
         
-//        if (posX >= 0 && posX <= 9 && posY >= 0 && posY <= 4 && posZ >= 0 && posZ <= 2) {
+        if (posX >= 0 && posX <= 9 && posY >= 0 && posY <= 4 && posZ >= 0 && posZ <= 2) {
             if (semTake(semZustand, WAIT_FOREVER) == OK) {
                 zustand.x = posX;
                 zustand.y = posY;
                 zustand.z = posZ;
                 semGive(semZustand);
             }
-            
-            printf("KOORDINATEN: %d %d %d\n", lager.x, lager.y, lager.z);
-            printf("ZUSTAND: %d %d %d\n", zustand.x, zustand.y, zustand.z);
 
             msgQSend(msgQ_gueltigeDaten, (char*)&daten, sizeof(abusdata), NO_WAIT, MSG_PRI_NORMAL);
 
             // Streckenberechnung einmalig triggern
             struct itimerspec spec = { {0, 0}, {1, 0} };
             timer_settime(timerStrecke, TIMER_RELTIME, &spec, NULL);
-//        } else {
-//            printf("[Analyse] Position außerhalb Pin-Toleranz: x=%ld y=%ld z=%ld\n", lager.x, lager.y, lager.z);
-//        }
+        } else {
+            printf("[Analyse] Position außerhalb Pin-Toleranz: x=%ld y=%ld z=%ld\n", lager.x, lager.y, lager.z);
+        }
     }
     else {
     	printf("[Simulation] keine Daten erhalten\n\n");
@@ -98,61 +95,6 @@ void taskBusdatenAnalysieren(timer_t tid, int arg) {
 }
 
 /* ===== Streckenberechnung ===== */
-//void taskStreckenberechnung(timer_t tid, int arg) {
-//    abusdata daten;
-//
-//    if (msgQReceive(msgQ_gueltigeDaten, (char*)&daten, sizeof(abusdata), NO_WAIT) != ERROR) {
-//        int x, y, z, dx, dy, dz;
-//
-//        // Beispiel: Berechne aktuelle Position aus daten abits (analog wie in taskBusdatenAnalysieren)
-//        // Das kannst du anpassen, je nachdem was genau in abusdata drin ist
-//        int posX = -1, posY = -1, posZ = -1;
-//
-//        // Hier muss die Logik ergänzt werden, um posX/Y/Z aus daten zu bestimmen
-//        // Beispiel (vereinfacht):
-//        if (daten.abits.axr)
-//            posX = lager.x + (daten.abits.axs ? lager.x_speed_fast : lager.x_speed);
-//        else if (daten.abits.axl)
-//            posX = lager.x - (daten.abits.axs ? lager.x_speed_fast : lager.x_speed);
-//
-//        if (daten.abits.ayo)
-//            posY = lager.y + lager.y_speed;
-//        else if (daten.abits.ayu)
-//            posY = lager.y - lager.y_speed;
-//
-//        if (daten.abits.azv)
-//            posZ = lager.z + lager.z_speed;
-//        else if (daten.abits.azh)
-//            posZ = lager.z - lager.z_speed;
-//
-//        // Fallback auf globalen Zustand, falls keine valide Position ermittelt wurde
-//        if (posX < 0 || posX > 9) posX = zustand.x;
-//        if (posY < 0 || posY > 4) posY = zustand.y;
-//        if (posZ < 0 || posZ > 2) posZ = zustand.z;
-//
-//        if (semTake(semLagerhardware, WAIT_FOREVER) == OK) {
-//            dx = lager.dist_x; dy = lager.dist_yu; dz = lager.dist_z;
-//            lager.x = posX;
-//            lager.y = posY;
-//            lager.z = posZ;
-//            semGive(semLagerhardware);
-//        }
-//
-//        if (semTake(semStrecke, WAIT_FOREVER) == OK) {
-//            strecke.zielX = (posX + dx <= 9) ? posX + dx : posX;
-//            strecke.zielY = (posY + dy <= 4) ? posY + dy : posY;
-//            strecke.zielZ = (posZ + dz <= 2) ? posZ + dz : posZ;
-//            semGive(semStrecke);
-//        }
-//
-//        printf("[Strecke] Neue Zielkoordinaten: (%d, %d, %d)\n", strecke.zielX, strecke.zielY, strecke.zielZ);
-//        
-//        sensordaten_gen();
-//    }
-//}
-
-
-
 void taskStreckenberechnung(timer_t tid, int arg) {
     abusdata daten;
 

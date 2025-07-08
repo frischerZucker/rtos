@@ -51,7 +51,8 @@ typedef enum {
 
 // Zustand des Lagers -> Fächer voll / leer, Position des Schlittens
 typedef struct {
-	regalzustand_t regal[COLS][ROWS];
+	// +1 für einheitliches Koordinatensystem (unterste Reihe = 1) -> war einfacher als den Rest anzupassen
+	regalzustand_t regal[COLS + 1][ROWS + 1];
 	vec3_t schlitten_pos;
 	lichtschrankenstatus_t lichtschranken[3];
 	ea_zustand_t eingabe;

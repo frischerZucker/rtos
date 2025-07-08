@@ -11,25 +11,17 @@
 extern lagerzustand_t lagerstatus;  // globale Lagerdatenstruktur
 extern MSG_Q_ID msgq_auftraege;
 
-
-//typedef struct {
-//    int regal[5][10];  // 5x10 Tabelle mit (0 oder 1)
- //   int eingabe; // eingabeplatz (0 oder 1)
-//    int ausgabe;
-//    double x, y, z; //position Schlitten
-//} Lagerzustand;
-
-// Pr�ft ob Position g�ltig im Regal ist
+// Prüft ob Position gültig im Regal ist
 BOOL istGueltigePosition(int x, int y) {
-    return (x >= 0 && x < COLS && y >= 0 && y < ROWS);
+    return (x > 0 && x <= COLS && y > 0 && y <= ROWS);
 }
 
 // zeigt die Belegung des Regals an
 void zeigeBelegung(void) {
     printf("---------------------\n");
-    for (int y = ROWS - 1; y >= 0; y--) {  // reihen
+    for (int y = ROWS; y >= 1; y--) {  // reihen
         printf("|");
-        for (int x = 0; x < COLS; x++) {
+        for (int x = 1; x <= COLS; x++) {
             printf("%d|", lagerstatus.regal[x][y]);  //spalten
         }
         printf("\n");
@@ -37,7 +29,12 @@ void zeigeBelegung(void) {
     printf("---------------------\n");
 }
 
-// F�hrt das eingegebene Kommando aus
+/*
+ * Führt das eingegebene Kommando aus.
+ * 
+ * Ich hab keine Ahnung warum, aber manchmal kommt die Kommandoabfrage erneut, obwohl ein Kommando erfolgreich eingelesen wurde.
+ * -> wenn nach Eingabe eines Befehls eine Kommandoeingabe ohne Fehlermeldung kommt, einfach nochmal Enter drücken
+ */
 void verarbeiteKommando(void) {
     char cmd_buffer[32];
     command cmd = readcommand(cmd_buffer);

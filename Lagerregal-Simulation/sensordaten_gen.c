@@ -15,20 +15,16 @@
 extern SEM_ID semLagerhardware;  
 extern regal_status lager;       //Sensorwerte
 
-//extern speicher_zustand zustand;
 
 extern int sensor_pipe_fd;
 
-// Initialisierung der Pipe
-//void initSensorPipe(void) {
-//    pipeDrv(10);
-//    pipeDevCreate(SENSOR_PIPE_NAME, SENSOR_PIPE_MSG_SIZE, 10);
-//
-//    pipeFdSensor = open(SENSOR_PIPE_NAME, O_WRONLY, 0);
-//    if (pipeFdSensor == ERROR) {
-//        perror("Fehler beim Oeffnen der Pipe");
-//    }
-//}
+/*
+ * TODO:
+ * 	Dimensionen der Sensoren sind der gesamte Streckenabschnitt und hardgecodet
+ * 	-> müsste man noch anpassen
+ * 	
+ * 	Lichtschrankensensoren machen nichts
+ */
 
 // Sensorwerte generieren und senden
 void sensordaten_gen(void) {
@@ -63,14 +59,6 @@ void sensordaten_gen(void) {
 		daten.sbits.x10 = (lager.x >= 90);
 	
 		//Z-Tastsensoren
-//		daten.sbits.zR  = (lager.z <= 5);   
-//		daten.sbits.zM  = (lager.z == 10); // mitte
-//		daten.sbits.zEA = (lager.z >= 15);  
-		
-//		zustand.z = 100;
-//		zustand.y = 200;
-//		zustand.x = 300;
-		
 		if (lager.z <= 5) {
 			daten.sbits.zR = 1;
 			daten.sbits.zM = 0;
